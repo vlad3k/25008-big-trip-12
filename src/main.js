@@ -1,3 +1,5 @@
+'use strict';
+
 const createSiteRouteAndCostTemplate = () => {
   return (
     `<section class="trip-main__trip-info  trip-info">
@@ -346,9 +348,3 @@ render(siteTripEventsListElement, createSiteEventTemplate(), `beforeend`);
 render(siteTripEventsListElement, createSiteEventEditTemplate(), `beforeend`);
 render(siteTripEventsListElement, createSiteEventTemplate(), `beforeend`);
 render(siteTripEventsListElement, createSiteEventTemplate(), `beforeend`);
-
-
-
-
-
-
