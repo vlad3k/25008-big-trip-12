@@ -1,5 +1,3 @@
-'use strict';
-
 const createSiteRouteAndCostTemplate = () => {
   return (
     `<section class="trip-main__trip-info  trip-info">
