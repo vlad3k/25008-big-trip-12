@@ -1,5 +1,5 @@
 import {EVENT_TYPES} from "../const";
-import {getDateFormated} from "../utils";
+import {createElement, getDateFormated} from "../utils";
 
 const createOffersTemplate = (offers, i) => {
   return offers.length > 0 ? offers.map(({name, price, isChecked}) => `<div class="event__offer-selector">
@@ -33,7 +33,7 @@ const createDestinationTemplate = (photos, description) => {
   </section>` : ``;
 };
 
-export const createSiteFormEvent = (event) => {
+const createSiteFormEvent = (event) => {
   const {
     type,
     destination,
@@ -184,3 +184,25 @@ export const createSiteFormEvent = (event) => {
   );
 };
 
+export default class SiteFormView {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  _getTemplate() {
+    return createSiteFormEvent(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

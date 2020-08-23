@@ -1,5 +1,4 @@
-import {humanizeDate} from "../utils";
-import {humanizeDuration} from "../utils";
+import {humanizeDate, humanizeDuration, createElement} from "../utils";
 import {EVENT_TYPES} from "../const";
 
 const MAX_OFFERS_COUNT = 3;
@@ -13,7 +12,6 @@ const createOffersTemplate = (offers) => {
 };
 
 export const createSiteEventTemplate = (event) => {
-
   const {
     type,
     destination,
@@ -61,3 +59,25 @@ export const createSiteEventTemplate = (event) => {
   );
 };
 
+export default class Event {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  _getTemplate() {
+    return createSiteEventTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

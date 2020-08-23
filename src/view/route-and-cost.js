@@ -1,4 +1,6 @@
-export const createSiteRouteAndCostTemplate = () => {
+import {createElement} from "../utils";
+
+const createSiteRouteAndCostTemplate = () => {
   return (
     `<section class="trip-main__trip-info  trip-info">
       <div class="trip-info__main">
@@ -13,3 +15,25 @@ export const createSiteRouteAndCostTemplate = () => {
     </section>`
   );
 };
+
+export default class RouteAndCost {
+  constructor() {
+    this._element = null;
+  }
+
+  _getTemplate() {
+    return createSiteRouteAndCostTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this._getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
