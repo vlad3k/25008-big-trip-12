@@ -1,11 +1,13 @@
-import {createSiteTripDayTemplate} from './view/trip-day';
-import {createSiteTripDaysTemplate} from './view/trip-days';
-import {createSiteSortTemplate} from './view/sort';
-import {createSiteRouteAndCostTemplate} from './view/route-and-cost';
-import {createSiteMenuTemplate} from './view/menu';
-import {createSiteFilterTemplate} from './view/filter';
-import {createSiteFormEvent} from './view/event-form';
+import {render, RenderPosition} from "./utils";
 import {generateEvent} from "./mock/event";
+import TripDayView from "./view/trip-day";
+import TripDaysView from "./view/trip-days";
+import SortView from "./view/sort";
+import RouteAndCostView from "./view/route-and-cost";
+import MenuView from "./view/menu";
+import FilterView from "./view/filter";
+import EventFormView from "./view/event-form";
+import EventView from "./view/event";
 
 const events = new Array(22).fill().map(generateEvent);
 
@@ -26,15 +28,15 @@ const siteHeaderElement = document.querySelector(`.page-header`);
 const siteTripMainElement = siteHeaderElement.querySelector(`.trip-main`);
 const siteTripControlsElement = siteTripMainElement.querySelector(`.trip-controls`);
 
-render(siteTripMainElement, createSiteRouteAndCostTemplate(), `afterbegin`);
-render(siteTripControlsElement, createSiteMenuTemplate());
-render(siteTripControlsElement, createSiteFilterTemplate());
+render(siteTripMainElement, new RouteAndCostView().getElement(), RenderPosition.AFTERBEGIN);
+render(siteTripControlsElement, new MenuView().getElement());
+render(siteTripControlsElement, new FilterView().getElement());
 
 const siteMainElement = document.querySelector(`.page-main`);
 const siteTripEventsElement = siteMainElement.querySelector(`.trip-events`);
 
-render(siteTripEventsElement, createSiteSortTemplate());
-render(siteTripEventsElement, createSiteTripDaysTemplate());
+render(siteTripEventsElement, new SortView().getElement());
+render(siteTripEventsElement, new TripDaysView().getElement());
 
 const siteTripDaysElement = siteTripEventsElement.querySelector(`.trip-days`);
 

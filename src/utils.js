@@ -1,3 +1,27 @@
+export const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`,
+};
+
+export const render = (container, element, place = RenderPosition.BEFOREEND) => {
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+  }
+};
+
+export const createElement = (template) => {
+  const newElement = document.createElement(`div`); // 1
+  newElement.innerHTML = template; // 2
+
+  return newElement.firstChild; // 3
+};
+
+
 const formatTimeZero = (time, type) => time < 10 ? `0${time}${type} ` : `${time}${type} `;
 
 export const getRandomInteger = (a = 0, b = 1) => {
@@ -31,4 +55,8 @@ export const getDateFormated = (d) => {
 export const getRandomArrayElement = (arr) => {
   const randomIndex = getRandomInteger(0, arr.length - 1);
   return arr[randomIndex];
+};
+
+export const renderTemplate = (container, template, place = `beforeend`) => {
+  container.insertAdjacentHTML(place, template);
 };
