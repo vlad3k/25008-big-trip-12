@@ -8,6 +8,7 @@ import MenuView from "./view/menu";
 import FilterView from "./view/filter";
 import EventFormView from "./view/event-form";
 import EventView from "./view/event";
+import NoEventsView from "./view/no-events";
 
 const eventsArr = new Array(22).fill().map(generateEvent);
 
@@ -32,14 +33,24 @@ const renderEvent = (eventListElement, event) => {
     eventListElement.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
   };
 
+  const onEscKeyDown = (evt) => {
+    if (evt.key === `Escape` || evt.key === `Esc`) {
+      evt.preventDefault();
+      replaceFormToCard();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  }
+
   const rollUpButton = eventComponent.getElement().querySelector(`.event__rollup-btn`);
   rollUpButton.addEventListener(`click`, () => {
     replaceCardToForm();
+    document.addEventListener(`keydown`, onEscKeyDown);
   });
 
   const eventFormElement = eventEditComponent.getElement().querySelector(`form`);
   eventFormElement.addEventListener(`submit`, () => {
     replaceFormToCard();
+    document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
   render(eventListElement, eventComponent.getElement());
@@ -61,16 +72,20 @@ render(siteTripEventsElement, new TripDaysView().getElement());
 
 const siteTripDaysElement = siteTripEventsElement.querySelector(`.trip-days`);
 
-const sortedGroupedEvents = Object.entries(groupedEvents)
-  .sort((a, b) => new Date(a[0]) - new Date(b[0]));
+if (Object.keys(groupedEvents).length === 0) {
+  render(siteTripEventsElement, new NoEventsView().getElement());
+} else {
+  const sortedGroupedEvents = Object.entries(groupedEvents)
+    .sort((a, b) => new Date(a[0]) - new Date(b[0]));
 
-sortedGroupedEvents.forEach((dates, index) => {
-  const [day, events] = dates;
-  const dayComponent = new TripDayView(day, index);
-  render(siteTripDaysElement, dayComponent.getElement());
+  sortedGroupedEvents.forEach((dates, index) => {
+    const [day, events] = dates;
+    const dayComponent = new TripDayView(day, index);
+    const eventsList = dayComponent.getElement().querySelector(`.trip-events__list`);
+    render(siteTripDaysElement, dayComponent.getElement());
 
-  for (const event of events) {
-    let eventsList = dayComponent.getElement().querySelector(`.trip-events__list`);
-    renderEvent(eventsList, event);
-  }
-});
+    for (const event of events) {
+      renderEvent(eventsList, event);
+    }
+  });
+}
