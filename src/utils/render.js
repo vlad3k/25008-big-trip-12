@@ -14,6 +14,7 @@ export const render = (container, child, place = RenderPosition.BEFOREEND) => {
     child = child.getElement();
   }
 
+
   switch (place) {
     case RenderPosition.AFTERBEGIN:
       container.prepend(child);
