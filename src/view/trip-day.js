@@ -1,4 +1,4 @@
-import {createElement} from "../utils";
+import AbstractView from "./abstract";
 
 export const createSiteTripDayTemplate = (day, dayNumber) => {
   const dayDate = new Date(day).toLocaleString(`en-US`, {month: `short`, day: `2-digit`});
@@ -15,26 +15,14 @@ export const createSiteTripDayTemplate = (day, dayNumber) => {
   );
 };
 
-export default class tripDay {
+export default class tripDay extends AbstractView {
   constructor(day, index) {
+    super();
     this._dayNumber = index;
     this._day = day;
-    this._element = null;
   }
 
   _getTemplate() {
     return createSiteTripDayTemplate(this._day, this._dayNumber);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

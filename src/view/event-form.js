@@ -1,5 +1,6 @@
+import AbstractView from "./abstract";
 import {EVENT_TYPES} from "../const";
-import {createElement, getDateFormated} from "../utils";
+import {getDateFormated} from "../utils/event";
 
 const createOffersTemplate = (offers, i) => {
   return offers.length > 0 ? offers.map(({name, price, isChecked}) => `<div class="event__offer-selector">
@@ -184,25 +185,24 @@ const createSiteFormEvent = (event) => {
   );
 };
 
-export default class SiteFormView {
+export default class SiteFormView extends AbstractView {
   constructor(event) {
+    super();
     this._event = event;
-    this._element = null;
+    this._submitHandler = this._submitHandler.bind(this);
   }
 
   _getTemplate() {
     return createSiteFormEvent(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
+  _submitHandler(evt) {
+    evt.preventDefault();
+    this._callback.submit();
   }
 
-  removeElement() {
-    this._element = null;
+  setSubmitHandler(callback) {
+    this._callback.submit = callback;
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
   }
 }

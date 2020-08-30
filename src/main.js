@@ -1,4 +1,4 @@
-import {render, RenderPosition} from "./utils";
+import {render, RenderPosition, replace, remove} from "./utils/render";
 import {generateEvent} from "./mock/event";
 import TripDayView from "./view/trip-day";
 import TripDaysView from "./view/trip-days";
@@ -26,11 +26,12 @@ const renderEvent = (eventListElement, event) => {
   const eventEditComponent = new EventFormView(event);
 
   const replaceCardToForm = () => {
-    eventListElement.replaceChild(eventEditComponent.getElement(), eventComponent.getElement());
+    replace(eventEditComponent, eventComponent);
   };
 
   const replaceFormToCard = () => {
-    eventListElement.replaceChild(eventComponent.getElement(), eventEditComponent.getElement());
+    console.log('!!!!')
+    replace(eventComponent, eventEditComponent);
   };
 
   const onEscKeyDown = (evt) => {
@@ -41,39 +42,37 @@ const renderEvent = (eventListElement, event) => {
     }
   }
 
-  const rollUpButton = eventComponent.getElement().querySelector(`.event__rollup-btn`);
-  rollUpButton.addEventListener(`click`, () => {
+  eventComponent.setEditClickHandler(() => {
     replaceCardToForm();
     document.addEventListener(`keydown`, onEscKeyDown);
   });
 
-  const eventFormElement = eventEditComponent.getElement().querySelector(`form`);
-  eventFormElement.addEventListener(`submit`, () => {
+  eventEditComponent.setSubmitHandler(() => {
     replaceFormToCard();
     document.removeEventListener(`keydown`, onEscKeyDown);
   });
 
-  render(eventListElement, eventComponent.getElement());
+  render(eventListElement, eventComponent);
 };
 
 const siteHeaderElement = document.querySelector(`.page-header`);
 const siteTripMainElement = siteHeaderElement.querySelector(`.trip-main`);
 const siteTripControlsElement = siteTripMainElement.querySelector(`.trip-controls`);
 
-render(siteTripMainElement, new RouteAndCostView().getElement(), RenderPosition.AFTERBEGIN);
-render(siteTripControlsElement, new MenuView().getElement());
-render(siteTripControlsElement, new FilterView().getElement());
+render(siteTripMainElement, new RouteAndCostView(), RenderPosition.AFTERBEGIN);
+render(siteTripControlsElement, new MenuView());
+render(siteTripControlsElement, new FilterView());
 
 const siteMainElement = document.querySelector(`.page-main`);
 const siteTripEventsElement = siteMainElement.querySelector(`.trip-events`);
 
-render(siteTripEventsElement, new SortView().getElement());
-render(siteTripEventsElement, new TripDaysView().getElement());
+render(siteTripEventsElement, new SortView());
+render(siteTripEventsElement, new TripDaysView());
 
 const siteTripDaysElement = siteTripEventsElement.querySelector(`.trip-days`);
 
 if (Object.keys(groupedEvents).length === 0) {
-  render(siteTripEventsElement, new NoEventsView().getElement());
+  render(siteTripEventsElement, new NoEventsView());
 } else {
   const sortedGroupedEvents = Object.entries(groupedEvents)
     .sort((a, b) => new Date(a[0]) - new Date(b[0]));
@@ -82,7 +81,7 @@ if (Object.keys(groupedEvents).length === 0) {
     const [day, events] = dates;
     const dayComponent = new TripDayView(day, index);
     const eventsList = dayComponent.getElement().querySelector(`.trip-events__list`);
-    render(siteTripDaysElement, dayComponent.getElement());
+    render(siteTripDaysElement, dayComponent);
 
     for (const event of events) {
       renderEvent(eventsList, event);

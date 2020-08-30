@@ -1,4 +1,5 @@
-import {humanizeDate, humanizeDuration, createElement} from "../utils";
+import AbstractView from "./abstract";
+import {humanizeDate, humanizeDuration} from "../utils/event";
 import {EVENT_TYPES} from "../const";
 
 const MAX_OFFERS_COUNT = 3;
@@ -59,25 +60,24 @@ export const createSiteEventTemplate = (event) => {
   );
 };
 
-export default class Event {
+export default class Event extends AbstractView {
   constructor(event) {
+    super();
     this._event = event;
-    this._element = null;
+    this._editClickHandler = this._editClickHandler.bind(this);
   }
 
   _getTemplate() {
     return createSiteEventTemplate(this._event);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
+  _editClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.editClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setEditClickHandler(callback) {
+    this._callback.editClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._editClickHandler);
   }
 }
