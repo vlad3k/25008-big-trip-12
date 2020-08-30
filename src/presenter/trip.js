@@ -36,7 +36,6 @@ export default class Trip {
     };
 
     const replaceFormToCard = () => {
-      console.log('!!!!')
       replace(eventComponent, eventEditComponent);
     };
 
@@ -46,7 +45,7 @@ export default class Trip {
         replaceFormToCard();
         document.removeEventListener(`keydown`, onEscKeyDown);
       }
-    }
+    };
 
     eventComponent.setEditClickHandler(() => {
       replaceCardToForm();
@@ -59,7 +58,7 @@ export default class Trip {
     });
 
     render(eventListElement, eventComponent);
-  };
+  }
 
   _renderDay(dates, index) {
     const [day, events] = dates;
@@ -70,7 +69,7 @@ export default class Trip {
     for (const event of events) {
       this._renderEvent(eventsList, event);
     }
-  };
+  }
 
   _renderDays() {
     this._sortedDays.forEach((dates, index) => {
