@@ -1,4 +1,4 @@
-import {createElement} from "../utils";
+import AbstractView from "./abstract";
 
 const createSiteRouteAndCostTemplate = () => {
   return (
@@ -16,24 +16,8 @@ const createSiteRouteAndCostTemplate = () => {
   );
 };
 
-export default class RouteAndCost {
-  constructor() {
-    this._element = null;
-  }
-
+export default class RouteAndCost extends AbstractView {
   _getTemplate() {
     return createSiteRouteAndCostTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

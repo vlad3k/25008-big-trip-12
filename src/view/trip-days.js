@@ -1,23 +1,7 @@
-import {createElement} from "../utils";
+import AbstractView from "./abstract";
 
-export default class SiteMenu {
-  constructor() {
-    this._element = null;
-  }
-
+export default class SiteMenu extends AbstractView {
   _getTemplate() {
     return `<ul class="trip-days"></ul>`;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this._getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
