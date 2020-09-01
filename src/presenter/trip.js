@@ -1,3 +1,4 @@
+import {generateEvent} from "../mock/event";
 import {render, RenderPosition, replace} from "../utils/render";
 import EventView from "../view/event";
 import EventFormView from "../view/event-form";
@@ -15,8 +16,8 @@ export default class Trip {
     this._noEventsComponent = new NoEventsView();
   }
 
-  init(days) {
-    this._days = days;
+  init(count) {
+    this._days = this._generateDates(count);
     this._sortDays();
     if (this._sortedDays.length === 0) {
       render(this._tripContainer, this._noEventsComponent);
@@ -25,6 +26,21 @@ export default class Trip {
     render(this._tripContainer, this._tripDaysComponent);
     render(this._tripContainer, this._sortViewComponent, RenderPosition.AFTERBEGIN);
     this._renderDays();
+  }
+
+  _generateDates(count) {
+    const eventsArr = Array.from({length: count}, generateEvent);
+
+    const groupedEvents = {};
+
+    for (const event of eventsArr) {
+      const date = new Date(event.startDate);
+      const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(String).map((str) => str.padStart(`0`, 2)).join(`-`);
+      groupedEvents[day] = groupedEvents[day] || [];
+      groupedEvents[day].push(event);
+    }
+
+    return groupedEvents;
   }
 
   _renderEvent(eventListElement, event) {
@@ -63,11 +79,10 @@ export default class Trip {
   _renderDay(dates, index) {
     const [day, events] = dates;
     const dayComponent = new TripDayView(day, index);
-    const eventsList = dayComponent.getElement().querySelector(`.trip-events__list`);
     render(this._tripDaysComponent, dayComponent);
 
     for (const event of events) {
-      this._renderEvent(eventsList, event);
+      this._renderEvent(dayComponent.getEventsContainer(), event);
     }
   }
 
