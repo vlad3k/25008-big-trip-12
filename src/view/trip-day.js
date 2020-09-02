@@ -3,11 +3,13 @@ import AbstractView from "./abstract";
 export const createSiteTripDayTemplate = (day, dayNumber) => {
   const dayDate = new Date(day).toLocaleString(`en-US`, {month: `short`, day: `2-digit`});
 
+  const dayInnerTemplate = `<span class="day__counter">${dayNumber + 1}</span>
+        <time class="day__date" datetime="2019-03-18">${dayDate}</time>`;
+
   return (
     `<li class="trip-days__item  day">
       <div class="day__info">
-        <span class="day__counter">${dayNumber + 1}</span>
-        <time class="day__date" datetime="2019-03-18">${dayDate}</time>
+        ${dayNumber === null ? `` : dayInnerTemplate}
       </div>
 
       <ul class="trip-events__list"></ul>

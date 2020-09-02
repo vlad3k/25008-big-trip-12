@@ -21,3 +21,7 @@ export const getDateFormated = (d) => {
   const time = d.toLocaleString(`en-GB`, {hour: `numeric`, minute: `numeric`});
   return `${date} ${time}`;
 };
+
+export const calculateTimeDuration = (event) => {
+  return new Date(event.endDate) - new Date(event.startDate);
+};
