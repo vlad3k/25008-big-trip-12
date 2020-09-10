@@ -1,8 +1,7 @@
 import {generateEvent} from "../mock/event";
-import {render, RenderPosition, replace} from "../utils/render";
+import {render, RenderPosition} from "../utils/render";
 import {calculateTimeDuration} from "../utils/event";
-import EventView from "../view/event";
-import EventFormView from "../view/event-form";
+import EventPresenter from "../presenter/event";
 import NoEventsView from "../view/no-events";
 import SortView from "../view/sort";
 import TripDayView from "../view/trip-day";
@@ -50,47 +49,9 @@ export default class Trip {
     return groupedEvents;
   }
 
-  _renderEvent(eventListElement, event) {
-    const eventComponent = new EventView(event);
-    const eventEditComponent = new EventFormView(event);
-
-    const replaceCardToForm = () => {
-      replace(eventEditComponent, eventComponent);
-    };
-
-    const replaceFormToCard = () => {
-      replace(eventComponent, eventEditComponent);
-    };
-
-    const onEscKeyDown = (evt) => {
-      if (evt.key === `Escape` || evt.key === `Esc`) {
-        evt.preventDefault();
-        replaceFormToCard();
-        document.removeEventListener(`keydown`, onEscKeyDown);
-      }
-    };
-
-    eventComponent.setEditClickHandler(() => {
-      replaceCardToForm();
-      document.addEventListener(`keydown`, onEscKeyDown);
-    });
-
-    eventEditComponent.setSubmitHandler(() => {
-      replaceFormToCard();
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    });
-
-    render(eventListElement, eventComponent);
-  }
-
-  _renderDay(dates, index) {
-    const [day, events] = dates;
-    const dayComponent = new TripDayView(day, index);
-    render(this._tripDaysComponent, dayComponent);
-
-    for (const event of events) {
-      this._renderEvent(dayComponent.getEventsContainer(), event);
-    }
+  _renderEvent(eventListContainer, event) {
+    const eventPresenter = new EventPresenter(eventListContainer);
+    eventPresenter.init(event);
   }
 
   _renderDaysContainer() {
