@@ -44,6 +44,7 @@ const createSiteFormEvent = (event) => {
     price,
     description,
     photos,
+    isFavorite,
   } = event;
 
   const typeStr = EVENT_TYPES.arrivals.includes(type) ? `${type} in` : `${type} to`;
@@ -156,7 +157,7 @@ const createSiteFormEvent = (event) => {
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">Delete</button>
 
-          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" checked>
+          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" checked="${isFavorite}">
           <label class="event__favorite-btn" for="event-favorite-1">
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -190,6 +191,7 @@ export default class SiteFormView extends AbstractView {
     super();
     this._event = event;
     this._submitHandler = this._submitHandler.bind(this);
+    this._favoriteChangeHandler = this._favoriteChangeHandler.bind(this);
   }
 
   _getTemplate() {
@@ -201,8 +203,18 @@ export default class SiteFormView extends AbstractView {
     this._callback.submit();
   }
 
+  _favoriteChangeHandler(evt) {
+    evt.preventDefault();
+    this._callback.favoriteChange(evt.target.checked);
+  }
+
   setSubmitHandler(callback) {
     this._callback.submit = callback;
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
+  }
+
+  setFavoriteChangeHandler(callback) {
+    this._callback.favoriteChange = callback;
+    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`change`, this._favoriteChangeHandler);
   }
 }

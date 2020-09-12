@@ -5,6 +5,8 @@ const TEXT = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliq
 const CITIES = [`Los Angeles`, `New York`, `Lauterbrunnen`, `Dublin`, `Bled`];
 const OFFERS = [`Add luggage`, `Switch to comfort class`, `Add meal`, `Choose seats`, `Travel by train`];
 
+const generateId = () => Date.now() + parseInt(Math.random() * 10000, 10);
+
 const generateDates = () => {
   const timestamp = Date.now();
   const startDate = new Date(Math.random() * 1000 * 60 * 60 * 24 * 10 + timestamp);
@@ -31,6 +33,7 @@ export const generateEvent = () => {
   const {startDate, endDate} = generateDates();
 
   return {
+    id: generateId(),
     type: getRandomArrayElement([...transfers, ...arrivals]),
     destination: getRandomArrayElement(CITIES),
     startDate,
@@ -38,6 +41,7 @@ export const generateEvent = () => {
     price: getRandomInteger(0, 300),
     offers: generateOffers(),
     description: getRandomArrayElement(TEXT.split(`.`)),
+    isFavorite: Boolean(getRandomInteger(0, 1)),
     photos: Array.from({length: getRandomInteger(0, 5)}, () => `http://picsum.photos/248/152?r=${Math.random()}`),
   };
 };

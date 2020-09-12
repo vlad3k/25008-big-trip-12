@@ -1,6 +1,7 @@
 import {generateEvent} from "../mock/event";
 import {render, RenderPosition} from "../utils/render";
 import {calculateTimeDuration} from "../utils/event";
+import {updateItem} from "../utils/common";
 import EventPresenter from "../presenter/event";
 import NoEventsView from "../view/no-events";
 import SortView from "../view/sort";
@@ -16,7 +17,9 @@ export default class Trip {
     this._tripDaysComponent = new TripDaysView();
     this._sortComponent = new SortView();
     this._noEventsComponent = new NoEventsView();
+    this._eventPresenter = {};
 
+    this._handleEventChange = this._handleEventChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
   }
 
@@ -31,6 +34,20 @@ export default class Trip {
     this._renderDaysContainer();
     this._renderSort();
     this._renderDays();
+  }
+
+  _handleEventChange(updatedEvent) {
+    this._days = Object
+      .values(this._days)
+      .forEach((events) => {
+        return updateItem(events, updatedEvent);
+      });
+
+
+    this._sourcedEvents = Object
+      .values(this._sourcedEvents)
+      .forEach((events) => updateItem(events, updatedEvent));
+    this._eventPresenter[updatedEvent.id].init(updatedEvent);
   }
 
   _generateDates(count) {
@@ -50,8 +67,19 @@ export default class Trip {
   }
 
   _renderEvent(eventListContainer, event) {
-    const eventPresenter = new EventPresenter(eventListContainer);
+    const eventPresenter = new EventPresenter(eventListContainer, this._handleEventChange);
     eventPresenter.init(event);
+    this._eventPresenter[event.id] = eventPresenter;
+  }
+
+  _renderDay(dates, index) {
+    const [day, events] = dates;
+    const dayComponent = new TripDayView(day, index);
+    render(this._tripDaysComponent, dayComponent);
+
+    for (const event of events) {
+      this._renderEvent(dayComponent.getEventsContainer(), event);
+    }
   }
 
   _renderDaysContainer() {
@@ -116,6 +144,10 @@ export default class Trip {
   }
 
   _clearDayList() {
-    this._tripDaysComponent.getElement().innerHTML = ``;
+    Object
+      .values(this._eventPresenter)
+      .forEach((presenter) => presenter.destroy());
+
+    this._eventPresenter = {};
   }
 }
