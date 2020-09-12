@@ -10,7 +10,6 @@ export const getRandomArrayElement = (arr) => {
 };
 
 export const updateItem = (items, update) => {
-  console.log(update);
   const index = items.findIndex((item) => {
     return item.id === update.id;
   });
