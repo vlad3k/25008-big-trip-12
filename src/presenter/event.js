@@ -2,23 +2,29 @@ import EventView from "../view/event";
 import EventFormView from "../view/event-form";
 import {remove, render, replace} from "../utils/render";
 
+const Mode = {
+  DEFAULT: `DEFAULT`,
+  EDITING: `EDITING`
+};
+
 export default class Event {
-  constructor(eventListContainer, changeData) {
+  constructor(eventListContainer, changeData, changeMode) {
     this._eventListContainer = eventListContainer;
     this._changeData = changeData;
+    this._changeMode = changeMode;
 
     this._eventComponent = null;
     this._eventEditComponent = null;
+    this._mode = Mode.DEFAULT;
 
     this._handleEditClick = this._handleEditClick.bind(this);
-    this._handleFavoriteChange = this._handleFavoriteChange.bind(this);
+    this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
     this._handleFormSubmit = this._handleFormSubmit.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
   init(event) {
     this._event = event;
-
     const prevEventComponent = this._eventComponent;
     const prevEventEditComponent = this._eventEditComponent;
 
@@ -27,18 +33,18 @@ export default class Event {
 
     this._eventComponent.setEditClickHandler(this._handleEditClick);
     this._eventEditComponent.setSubmitHandler(this._handleFormSubmit);
-    this._eventEditComponent.setFavoriteChangeHandler(this._handleFavoriteChange);
+    this._eventEditComponent.setFavoriteClickHandler(this._handleFavoriteClick);
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
       render(this._eventListContainer, this._eventComponent);
       return;
     }
 
-    if (this._eventListContainer.contains(prevEventComponent.getElement())) {
+    if (this._mode === Mode.DEFAULT) {
       replace(this._eventComponent, prevEventComponent);
     }
 
-    if (this._eventListContainer.contains(prevEventEditComponent.getElement())) {
+    if (this._mode === Mode.EDITING) {
       replace(this._eventEditComponent, prevEventEditComponent);
     }
 
@@ -46,15 +52,23 @@ export default class Event {
     remove(prevEventEditComponent);
   }
 
-  _replaceEventToForm() {
+  resetView() {
+    if (this._mode !== Mode.DEFAULT) {
+      this._replaceFormToEvent();
+    }
+  }
 
+  _replaceEventToForm() {
     replace(this._eventEditComponent, this._eventComponent);
     document.addEventListener(`keydown`, this._escKeyDownHandler);
+    this._changeMode();
+    this._mode = Mode.EDITING;
   }
 
   _replaceFormToEvent() {
     replace(this._eventComponent, this._eventEditComponent);
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
+    this._mode = Mode.DEFAULT;
   }
 
   destroy() {
@@ -66,17 +80,18 @@ export default class Event {
     this._replaceEventToForm();
   }
 
-  _handleFormSubmit() {
+  _handleFormSubmit(event) {
+    this._changeData(event);
     this._replaceFormToEvent();
   }
 
-  _handleFavoriteChange(isChecked) {
+  _handleFavoriteClick() {
     this._changeData(
         Object.assign(
             {},
             this._event,
             {
-              isFavorite: isChecked
+              isFavorite: !this._event.isFavorite
             }
         )
     );
@@ -87,6 +102,7 @@ export default class Event {
       evt.preventDefault();
       this._replaceFormToEvent();
       document.removeEventListener(`keydown`, this._escKeyDownHandler);
+      this._eventEditComponent.reset(this._event);
     }
   }
 }

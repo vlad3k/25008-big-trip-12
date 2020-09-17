@@ -1,7 +1,7 @@
 import {generateEvent} from "../mock/event";
-import {render, RenderPosition} from "../utils/render";
+import {render, remove, RenderPosition} from "../utils/render";
 import {calculateTimeDuration} from "../utils/event";
-import {updateItem} from "../utils/common";
+import {generateId, updateItem} from "../utils/common";
 import EventPresenter from "../presenter/event";
 import NoEventsView from "../view/no-events";
 import SortView from "../view/sort";
@@ -18,16 +18,17 @@ export default class Trip {
     this._sortComponent = new SortView();
     this._noEventsComponent = new NoEventsView();
     this._eventPresenter = {};
+    this._dayElements = {};
 
     this._handleEventChange = this._handleEventChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
+    this._handleModeChange = this._handleModeChange.bind(this);
   }
 
   init(count) {
-    this._days = this._generateDates(count);
-    this._sortDays();
-    this._sourcedEvents = this._sortedDays.slice();
-    if (this._sortedDays.length === 0) {
+    this._generateEvents(count);
+    this._sourcedEvents = this._events.slice();
+    if (this._events.length === 0) {
       this._renderNoEvents();
       return;
     }
@@ -36,38 +37,25 @@ export default class Trip {
     this._renderDays();
   }
 
+  _handleModeChange() {
+    Object
+      .values(this._eventPresenter)
+      .forEach((presenter) => presenter.resetView());
+  }
+
   _handleEventChange(updatedEvent) {
-    this._days = Object
-      .values(this._days)
-      .forEach((events) => {
-        return updateItem(events, updatedEvent);
-      });
-
-
-    this._sourcedEvents = Object
-      .values(this._sourcedEvents)
-      .forEach((events) => updateItem(events, updatedEvent));
+    this._events = updateItem(this._events, updatedEvent);
+    this._sourcedEvents = updateItem(this._events, updatedEvent);
     this._eventPresenter[updatedEvent.id].init(updatedEvent);
   }
 
-  _generateDates(count) {
+  _generateEvents(count) {
     const eventsArr = Array.from({length: count}, generateEvent);
     this._events = eventsArr;
-
-    const groupedEvents = {};
-
-    for (const event of eventsArr) {
-      const date = new Date(event.startDate);
-      const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(String).map((str) => str.padStart(`0`, 2)).join(`-`);
-      groupedEvents[day] = groupedEvents[day] || [];
-      groupedEvents[day].push(event);
-    }
-
-    return groupedEvents;
   }
 
   _renderEvent(eventListContainer, event) {
-    const eventPresenter = new EventPresenter(eventListContainer, this._handleEventChange);
+    const eventPresenter = new EventPresenter(eventListContainer, this._handleEventChange, this._handleModeChange);
     eventPresenter.init(event);
     this._eventPresenter[event.id] = eventPresenter;
   }
@@ -75,6 +63,7 @@ export default class Trip {
   _renderDay(dates, index) {
     const [day, events] = dates;
     const dayComponent = new TripDayView(day, index);
+    this._dayElements[day] = dayComponent;
     render(this._tripDaysComponent, dayComponent);
 
     for (const event of events) {
@@ -91,6 +80,19 @@ export default class Trip {
   }
 
   _renderDays() {
+    const groupedEvents = {};
+
+    for (const event of this._events) {
+      const date = new Date(event.startDate);
+      const day = [date.getFullYear(), date.getMonth() + 1, date.getDate()].map(String).map((str) => str.padStart(`0`, 2)).join(`-`);
+      groupedEvents[day] = groupedEvents[day] || [];
+      groupedEvents[day].push(event);
+    }
+
+    this._days = groupedEvents;
+
+    this._sortDays();
+
     this._sortedDays.forEach((dates, index) => {
       this._renderDay(dates, index);
     });
@@ -111,6 +113,7 @@ export default class Trip {
   _renderTrip() {
     if (this._currentSortType !== SortType.DEFAULT) {
       const dayComponent = new TripDayView(null, null);
+      this._dayElements[generateId()] = dayComponent;
       render(this._tripDaysComponent, dayComponent);
       this._events.forEach((event) => {
         this._renderEvent(dayComponent.getEventsContainer(), event);
@@ -149,5 +152,11 @@ export default class Trip {
       .forEach((presenter) => presenter.destroy());
 
     this._eventPresenter = {};
+
+    Object
+      .values(this._dayElements)
+      .forEach((element) => remove(element));
+
+    this._dayElements = {};
   }
 }
