@@ -34,6 +34,7 @@ export default class Event {
     this._eventComponent.setEditClickHandler(this._handleEditClick);
     this._eventEditComponent.setSubmitHandler(this._handleFormSubmit);
     this._eventEditComponent.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._eventEditComponent.setCloseClickHandler(this._handleCloseClick);
 
     if (prevEventComponent === null || prevEventEditComponent === null) {
       render(this._eventListContainer, this._eventComponent);
@@ -104,5 +105,10 @@ export default class Event {
       document.removeEventListener(`keydown`, this._escKeyDownHandler);
       this._eventEditComponent.reset(this._event);
     }
+  }
+
+  _handleCloseClick() {
+    this._replaceFormToEvent();
+    this._eventEditComponent.reset(this._event);
   }
 }

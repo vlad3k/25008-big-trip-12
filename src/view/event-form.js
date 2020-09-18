@@ -1,6 +1,9 @@
 import SmartView from "./smart.js";
 import {EVENT_TYPES, MOVE_TYPE, ACTIVITY_TYPE} from "../const";
-import {getDateFormated} from "../utils/event";
+import flatpickr from "flatpickr";
+import moment from 'moment';
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const createEventTypesTemplate = (types, selected) => {
   const current = selected.toLowerCase();
@@ -108,12 +111,12 @@ const createSiteFormEvent = (event) => {
             <label class="visually-hidden" for="event-start-time-1">
               From
             </label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${getDateFormated(start)}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${moment(start).format(`DD/MM/YY HH:mm`)}">
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">
               To
             </label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${getDateFormated(end)}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${moment(end).format(`DD/MM/YY HH:mm`)}">
           </div>
           <div class="event__field-group  event__field-group--price">
             <label class="event__label" for="event-price-1">
@@ -159,18 +162,62 @@ export default class SiteFormView extends SmartView {
   constructor(event) {
     super();
     this._data = event;
+    this._startDatePicker = null;
+    this._endDatePicker = null;
+
     this._favoriteInputElement = this.getElement().querySelector(`.event__favorite-checkbox`);
+    this._closeClickHandler = this._closeClickHandler.bind(this);
     this._submitHandler = this._submitHandler.bind(this);
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
     this._destinationInputHandler = this._destinationInputHandler.bind(this);
     this._priceInputHandler = this._priceInputHandler.bind(this);
     this._typeClickHandler = this._typeClickHandler.bind(this);
+    this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
+    this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
     this._setInnerHandlers();
+    this._setDatepickers();
   }
 
   reset(event) {
     this.updateData(event);
+  }
+
+  _setDatepickers() {
+    if (this._startDatePicker) {
+      this._startDatePicker.destroy();
+      this._startDatePicker = null;
+    }
+
+    if (this._endDatePicker) {
+      this._endDatePicker.destroy();
+      this._endDatePicker = null;
+    }
+
+    flatpickr(
+        this.getElement().querySelector(`.event__input--time[name="event-start-time"]`),
+        {
+          enableTime: true,
+          // eslint-disable-next-line camelcase
+          time_24hr: true,
+          dateFormat: `d/m/y H:i`,
+          defaultDate: this._data.startDate,
+          onChange: this._startDateChangeHandler
+        }
+    );
+
+    flatpickr(
+        this.getElement().querySelector(`.event__input--time[name="event-end-time"]`),
+        {
+          enableTime: true,
+          // eslint-disable-next-line camelcase
+          time_24hr: true,
+          dateFormat: `d/m/y H:i`,
+          defaultDate: this._data.endDate,
+          minDate: this._data.startDate,
+          onChange: this._endDateChangeHandler
+        }
+    );
   }
 
   _getTemplate() {
@@ -179,6 +226,7 @@ export default class SiteFormView extends SmartView {
 
   restoreHandlers() {
     this._setInnerHandlers();
+    this._setDatepickers();
     this.setSubmitHandler(this._callback.submit);
   }
 
@@ -233,14 +281,45 @@ export default class SiteFormView extends SmartView {
     this._favoriteInputElement.checked = this._data.isFavorite;
   }
 
+  _startDateChangeHandler([date]) {
+    if (date) {
+      this.updateData(
+          {
+            startDate: date
+          },
+          true);
+    }
+  }
+
+  _endDateChangeHandler([date]) {
+    if (date) {
+      this.updateData(
+          {
+            endDate: date
+          },
+          true);
+    }
+  }
+
   setSubmitHandler(callback) {
     this._callback.submit = callback;
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
+
   }
 
   setFavoriteClickHandler(callback) {
     this._callback.favorite = callback;
     this._favoriteInputElement.addEventListener(`change`, this._favoriteClickHandler);
     this._setCurrentFavorite();
+  }
+
+  _closeClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.closeClick();
+  }
+
+  setCloseClickHandler(callback) {
+    this._callback.closeClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._closeClickHandler);
   }
 }

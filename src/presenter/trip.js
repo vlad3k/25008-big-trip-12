@@ -1,7 +1,7 @@
 import {generateEvent} from "../mock/event";
 import {render, remove, RenderPosition} from "../utils/render";
 import {calculateTimeDuration} from "../utils/event";
-import {generateId, updateItem} from "../utils/common";
+import {updateItem} from "../utils/common";
 import EventPresenter from "../presenter/event";
 import NoEventsView from "../view/no-events";
 import SortView from "../view/sort";
@@ -113,7 +113,7 @@ export default class Trip {
   _renderTrip() {
     if (this._currentSortType !== SortType.DEFAULT) {
       const dayComponent = new TripDayView(null, null);
-      this._dayElements[generateId()] = dayComponent;
+      this._dayElements[null] = dayComponent;
       render(this._tripDaysComponent, dayComponent);
       this._events.forEach((event) => {
         this._renderEvent(dayComponent.getEventsContainer(), event);

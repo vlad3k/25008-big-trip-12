@@ -1,6 +1,6 @@
 import AbstractView from "./abstract";
-import {humanizeDate, humanizeDuration} from "../utils/event";
 import {EVENT_TYPES} from "../const";
+import moment from 'moment';
 
 const MAX_OFFERS_COUNT = 3;
 
@@ -23,8 +23,9 @@ export const createSiteEventTemplate = (event) => {
   } = event;
 
   const typeStr = EVENT_TYPES.arrivals.includes(type) ? `${type} in` : `${type} to`;
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = moment(startDate);
+  const end = moment(endDate);
+  const duration = end.diff(start);
 
   return (
     `<li class="trip-events__item">
@@ -36,11 +37,15 @@ export const createSiteEventTemplate = (event) => {
 
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${startDate}">${humanizeDate(start)}</time>
+            <time class="event__start-time" datetime="${startDate}">
+              ${moment(event.startDate).format(`HH:mm`)}
+            </time>
             &mdash;
-            <time class="event__end-time" datetime="${endDate}">${humanizeDate(end)}</time>
+            <time class="event__end-time" datetime="${endDate}">
+               ${moment(event.endDate).format(`HH:mm`)}
+            </time>
           </p>
-          <p class="event__duration">${humanizeDuration(end - start)}</p>
+          <p class="event__duration">${moment(duration).format(`DD[D] HH[H] mm[M]`)}</p>
         </div>
 
         <p class="event__price">
