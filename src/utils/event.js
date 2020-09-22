@@ -1,3 +1,6 @@
+import {FilterType} from "../const";
+import moment from "moment";
+
 const formatTimeZero = (time, type) => time < 10 ? `0${time}${type} ` : `${time}${type} `;
 
 export const humanizeDuration = (time) => {
@@ -24,4 +27,15 @@ export const getDateFormated = (d) => {
 
 export const calculateTimeDuration = (event) => {
   return new Date(event.endDate) - new Date(event.startDate);
+};
+
+export const getFilterRule = (filterType) => {
+  switch (filterType) {
+    case FilterType.FUTURE:
+      return (event) => moment().isBefore(event.startDate);
+    case FilterType.PAST:
+      return (event) => moment().isAfter(event.endDate);
+    default:
+      return () => true;
+  }
 };

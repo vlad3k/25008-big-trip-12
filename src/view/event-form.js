@@ -1,9 +1,34 @@
 import SmartView from "./smart.js";
 import {EVENT_TYPES, MOVE_TYPE, ACTIVITY_TYPE} from "../const";
+import {generateId} from "../utils/common";
+import {CITIES} from "../mock/event";
 import flatpickr from "flatpickr";
-import moment from 'moment';
 
-import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+import moment from 'moment';
+import "flatpickr/dist/flatpickr.min.css";
+
+const NEW_EVENT = {
+  id: generateId(),
+  type: EVENT_TYPES[`transfers`][0],
+  destination: ``,
+  startDate: new Date(),
+  endDate: new Date(),
+  price: 0,
+  offers: [],
+  description: ``,
+  isFavorite: false,
+  photos: [],
+};
+
+const createDestinationItemsTemplate = (currentDestination) => {
+  const destinationOptions = CITIES
+    .map((city) => (
+      `<option value="${city}" ${currentDestination === city ? `selected` : ``}>
+        ${city}
+      </option>`));
+
+  return destinationOptions.join(``);
+};
 
 const createEventTypesTemplate = (types, selected) => {
   const current = selected.toLowerCase();
@@ -51,7 +76,31 @@ const createDestinationTemplate = (photos, description) => {
   </section>` : ``;
 };
 
-const createSiteFormEvent = (event) => {
+const createRollupButtonTemplate = (isNewEvent) => {
+  if (isNewEvent) {
+    return ``;
+  }
+
+  return `<button class="event__rollup-btn" type="button">
+    <span class="visually-hidden">Open event</span>
+  </button>`;
+};
+
+const createFavoriteButtonTemplate = (id, isFavorite, isNewEvent) => {
+  if (isNewEvent) {
+    return ``;
+  }
+
+  return `<input id="event-favorite-${id}" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}">
+    <label class="event__favorite-btn" for="event-favorite-${id}">
+      <span class="visually-hidden">Add to favorite</span>
+      <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
+        <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
+      </svg>
+    </label>`;
+};
+
+const createSiteFormEvent = (event, isNewEvent) => {
   const {
     id,
     type,
@@ -70,8 +119,7 @@ const createSiteFormEvent = (event) => {
   const end = new Date(endDate);
 
   return (
-    `<li class="trip-events__item">
-      <form class="event event--edit" action="#" method="post">
+    `<form class="event event--edit trip-events__item" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
@@ -99,11 +147,9 @@ const createSiteFormEvent = (event) => {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${typeStr}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-${destination}" value="${destination}" list="destination-list-1">
-            <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-${destination}" value="${destination}" list="destination-list">
+            <datalist id="destination-list">
+              ${createDestinationItemsTemplate(destination)}
             </datalist>
           </div>
 
@@ -123,23 +169,15 @@ const createSiteFormEvent = (event) => {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+            <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${price}" autocomplete="off">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">Delete</button>
 
-          <input id="event-favorite-${id}" class="event__favorite-checkbox visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}">
-          <label class="event__favorite-btn" for="event-favorite-${id}">
-            <span class="visually-hidden">Add to favorite</span>
-            <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
-              <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
-            </svg>
-          </label>
+          ${createFavoriteButtonTemplate(id, isFavorite, isNewEvent)}
 
-          <button class="event__rollup-btn" type="button">
-            <span class="visually-hidden">Open event</span>
-          </button>
+          ${createRollupButtonTemplate(isNewEvent)}
         </header>
 
         <section class="event__details">
@@ -153,15 +191,15 @@ const createSiteFormEvent = (event) => {
 
           ${createDestinationTemplate(photos, description)}
         </section>
-      </form>
-    </li>`
+      </form>`
   );
 };
 
 export default class SiteFormView extends SmartView {
-  constructor(event) {
+  constructor(event = NEW_EVENT, isNewEvent = false) {
     super();
     this._data = event;
+    this._isNewEvent = isNewEvent;
     this._startDatePicker = null;
     this._endDatePicker = null;
 
@@ -174,12 +212,14 @@ export default class SiteFormView extends SmartView {
     this._typeClickHandler = this._typeClickHandler.bind(this);
     this._startDateChangeHandler = this._startDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
+    this._formDeleteClickHandler = this._formDeleteClickHandler.bind(this);
 
     this._setInnerHandlers();
     this._setDatepickers();
   }
 
   reset(event) {
+    this.setDeleteClickHandler(this._callback.deleteClick);
     this.updateData(event);
   }
 
@@ -221,13 +261,15 @@ export default class SiteFormView extends SmartView {
   }
 
   _getTemplate() {
-    return createSiteFormEvent(this._data);
+    return createSiteFormEvent(this._data, this._isNewEvent);
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
     this._setDatepickers();
     this.setSubmitHandler(this._callback.submit);
+    this.setCloseClickHandler(this._callback.closeClick);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   _setInnerHandlers() {
@@ -303,7 +345,7 @@ export default class SiteFormView extends SmartView {
 
   setSubmitHandler(callback) {
     this._callback.submit = callback;
-    this.getElement().querySelector(`form`).addEventListener(`submit`, this._submitHandler);
+    this.getElement().addEventListener(`submit`, this._submitHandler);
 
   }
 
@@ -321,5 +363,15 @@ export default class SiteFormView extends SmartView {
   setCloseClickHandler(callback) {
     this._callback.closeClick = callback;
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._closeClickHandler);
+  }
+
+  _formDeleteClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(this._data);
+  }
+
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formDeleteClickHandler);
   }
 }
